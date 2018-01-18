@@ -8,23 +8,28 @@ import java.awt.event.KeyListener;
 import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 /**
  *
  * @author Mateusz
  */
 public class Wonsz extends JFrame implements KeyListener, Runnable  {
+    
     private final JPanel p = new JPanel();
     
     private final int HEIGHT = 600;
-    private final int WIDTH = 800;
+    private final int WIDTH = 600;
     
     //Opcje Wunsza
     private JButton[] jb = new JButton[200];
+    JLabel jlabel = new JLabel("", JLabel.CENTER);
+    JLabel game_over = new JLabel("", JLabel.CENTER);
 
-    private int x = 800, y = 600 ;
-    private int rt = 3;
-    private int dirX = 1, dirY = 0, copyX, copyY;
+    private int x = 600, y = 600 ;
+    private int rt = 1;
+    private int dirX = 0, dirY = 0;
     private boolean food = false;
     private final int speed = 50;
     //Koordynaty
@@ -37,7 +42,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     private boolean u = false;
     private boolean d = false;
     
-    private Point[] snake_Scr = new Point[300];
+    private Point[] snake_Poz = new Point[300];
     private int score = 0;
     private boolean over = false;
     
@@ -56,10 +61,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         
         p.setLayout(null);
         p.setBackground(Color.DARK_GRAY);
-        
-//        getContentPane().setLayout(null);
-//        getContentPane().add(p);
-        
+       
         add(p);
         show();
         
@@ -73,13 +75,14 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
 
     
     public void init(){
-        rt = 3;
-        snake_X[0] = 100;
-        snake_Y[0] = 150;
-        dirX = 10;
+        rt =1;
+        snake_X[0] = 400;
+        snake_Y[0] = 300;
+        dirX = 0;
         dirY = 0;
         food = false;
         score = 0;
+        over = false;
         l = false;
         r = true;
         u = true;
@@ -87,17 +90,23 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     }
     
     public void start(){
+        //Napisów - ramka u góry z punktami
+        jlabel.setBorder(new LineBorder(Color.cyan));
+        jlabel.setForeground(Color.CYAN);
+        jlabel.setBounds(0, 0, 600, 20);
+     
+        game_over.setForeground(Color.CYAN);
+        game_over.setBounds(100, 200, 400, 100);
+        
+        //Aktualizowanie wyświetlaych punktów
+        jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
+        p.add(jlabel);
+        
         for(int i = 0; i < rt; i++){
             jb[i] = new JButton("jb" + i );
             jb[i].setEnabled(false);
-            jb[i].setBackground(Color.CYAN);
-
-            p.add(jb[i]);
-            
-            jb[i].setBounds(snake_X[i], snake_Y[i], 10, 10);
-            snake_X[i+1] = snake_X[i] = snake_X[i] - 10;
-            snake_Y[i+1] = snake_Y[i];
-            
+          
+            p.add(jb[i]); 
         }
     }
     
@@ -119,7 +128,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
          jb[rt].setBackground(Color.CYAN);
          p.add(jb[rt]);
          
-         
+         //Ustawienie nowego punktu
          int x = 10 + (10 * rm.nextInt(44));
          int y = 10 + (10 * rm.nextInt(44));
          
@@ -133,7 +142,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     
     public void move_Forward(){
         for(int i = 0; i < rt; i++){
-            snake_Scr[i] = jb[i].getLocation();
+            snake_Poz[i] = jb[i].getLocation();
         }
         
         //Poruszanie głową wunsza
@@ -143,23 +152,24 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         jb[0].setBackground(Color.RED);
         
         for(int i = 1; i < rt; i++){
-            jb[i].setLocation(snake_Scr[i - 1]);
+            jb[i].setLocation(snake_Poz[i - 1]);
         }
         
         //Poruszanie Wunszem
-//        if(snake_X[0] == x)
-//            snake_X[0] = 10;
-//        else if(snake_X[0] == 0)
-//            snake_X[0] = x - 10;
-//        else if(snake_Y[0] == y)
-//            snake_Y[0] = 10;
-//        else if(snake_Y[0] == 0)
-//            snake_Y[0] = y - 10;
+        if(snake_X[0] == x)
+            snake_X[0] = 10;
+        else if(snake_X[0] == 0)
+            snake_X[0] = x - 10;
+        else if(snake_Y[0] == y)
+            snake_Y[0] = 10;
+        else if(snake_Y[0] == 20)
+            snake_Y[0] = y - 10;
         
-        if(snake_X[0] == snake_X[rt - 1] && snake_Y[0] == snake_Y[rt - 1]){
+        if(snake_X[0] == snake_X[rt - 1] && snake_Y[0] == snake_Y[rt - 1] && rt > 1){
             food = false;
-            score += 5;
-            System.out.println("Score: " + score);
+            score += 1;
+            jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
+            System.out.println("Punkty: " + score);
         }
         if(!food){
             levelUp();
@@ -168,17 +178,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         else{
             jb[rt - 1].setBounds(snake_X[rt - 1], snake_Y[rt - 1], 10, 10);
         }
-        for(int i = 1; i < rt; i++){
-            if(snake_X[0] == rt){
-                System.out.println("Zjebałeś! Punkty: " + score);
-                try{
-                    thread.join();
-                }catch(Exception e){
-                    
-                }
-                break;
-            }
-        }
+
         p.repaint();
         show();
     }
@@ -186,6 +186,12 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     @Override
     public void run() {
       while(!over){
+          for(int i = 1; i<rt; i++){
+              if(jb[0].getBounds().intersects(jb[i].getBounds())){
+                  
+                  over = true;
+              }
+          }
           move_Forward();
          try{
             Thread.sleep(speed);
@@ -193,11 +199,16 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             e.printStackTrace();
        }
       }
+      if(over){
+          p.add(game_over);
+          game_over.setText("<html><span style='font-size: 15px; text-align: center;'>&nbsp &nbsp &nbsp Koniec Gry!</span><br/><span style='font-size: 10px;'>Naciśnij R żeby zrestartować<span></html>");
+          thread.stop();
+      }
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
     @Override
@@ -237,11 +248,14 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             l = true;
             System.out.println("Dół!");
         }
+        if(over && e.getKeyCode() == 82){
+            reset();
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
     
     
