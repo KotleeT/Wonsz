@@ -23,7 +23,8 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     private final int WIDTH = 600;
     
     //Opcje Wunsza
-    private JButton[] jb = new JButton[200];
+    private JButton[] jb = new JButton[2000];
+    private JButton[] foods = new JButton[2000];
     JLabel jlabel = new JLabel("", JLabel.CENTER);
     JLabel game_over = new JLabel("", JLabel.CENTER);
 
@@ -32,6 +33,8 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     private int dirX = 0, dirY = 0;
     private boolean food = false;
     private final int speed = 50;
+    private int z = 1;
+    private int foodsy = 50;
     //Koordynaty
     private int[] snake_X = new int [200];
     private int[] snake_Y = new int[200];
@@ -98,6 +101,18 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         game_over.setForeground(Color.CYAN);
         game_over.setBounds(100, 200, 400, 100);
         
+        foods[0] = new JButton("foods"+0);
+            for(int i = 1; i < foodsy; i++){
+                int a = 10 + (10 * rm.nextInt(60));
+                int b = 10 + (10 * rm.nextInt(60));
+                foods[i] = new JButton("foods"+i);
+                foods[i].setEnabled(false);
+                foods[i].setBounds(a, b, 10, 10);
+                foods[i].setBackground(Color.green);
+                p.add(foods[i]);
+                System.out.println("Wykonanie");
+        }
+        
         //Aktualizowanie wyświetlaych punktów
         jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
         p.add(jlabel);
@@ -107,6 +122,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             jb[i].setEnabled(false);
           
             p.add(jb[i]); 
+            System.out.println("jb " + i);
         }
     }
     
@@ -122,7 +138,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         thread.start();
     }
     //Rośnięcie
-    public void levelUp(){
+    public void levelUp(int i){
          jb[rt] = new JButton();
          jb[rt].setEnabled(false);
          jb[rt].setBackground(Color.CYAN);
@@ -152,7 +168,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         jb[0].setBackground(Color.RED);
         
         for(int i = 1; i < rt; i++){
-            jb[i].setLocation(snake_Poz[i - 1]);
+            foods[i].setLocation(snake_Poz[i - 1]);
         }
         
         //Poruszanie Wunszem
@@ -160,19 +176,32 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             snake_X[0] = 10;
         else if(snake_X[0] == 0)
             snake_X[0] = x - 10;
-        else if(snake_Y[0] == y)
-            snake_Y[0] = 10;
+        else if(snake_Y[0] == y - 10)
+            snake_Y[0] = 20;
         else if(snake_Y[0] == 20)
             snake_Y[0] = y - 10;
         
+        //Zdobywanie punktu - kolizja z jedzeniem
         if(snake_X[0] == snake_X[rt - 1] && snake_Y[0] == snake_Y[rt - 1] && rt > 1){
             food = false;
             score += 1;
             jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
             System.out.println("Punkty: " + score);
         }
+        for(int i = 0; i < foodsy; i++){
+            if(jb[0].getBounds().intersects(foods[i].getBounds())){
+                //System.out.println("Działa");
+                levelUp(i);
+                food = false;
+                score += 1;
+                jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
+                System.out.println("Punkty: " + score);
+                
+                
+            }
+        }
         if(!food){
-            levelUp();
+            //levelUp();
             food = true;
         }
         else{
@@ -220,7 +249,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             r = false;
             u = true;
             d = true;
-            System.out.println("Lewo!");
+            //System.out.println("Lewo!");
         }
         //Góra
         if(u == true && e.getKeyCode() == 38){
@@ -229,7 +258,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             r = true;
             l = true;
             d = false;
-            System.out.println("Góra!");
+            //System.out.println("Góra!");
         }
         if(r == true && e.getKeyCode() == 39){
             dirX = 10;
@@ -237,7 +266,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             l = false;
             u = true;
             d = true;
-            System.out.println("Prawo!");
+            //System.out.println("Prawo!");
             
         }
         if(d == true && e.getKeyCode() == 40){
@@ -246,7 +275,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
             r = true;
             u = false;
             l = true;
-            System.out.println("Dół!");
+            //System.out.println("Dół!");
         }
         if(over && e.getKeyCode() == 82){
             reset();
