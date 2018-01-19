@@ -2,6 +2,7 @@ package wonsz;
 
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -23,18 +24,17 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     private final int WIDTH = 600;
     
     //Opcje Wunsza
-    private JButton[] jb = new JButton[2000];
-    private JButton[] foods = new JButton[2000];
+    private final JButton[] head = new JButton[500];
+    private final JButton[] foods = new JButton[2000];
     JLabel jlabel = new JLabel("", JLabel.CENTER);
     JLabel game_over = new JLabel("", JLabel.CENTER);
 
-    private int x = 600, y = 600 ;
-    private int rt = 1;
+    private final int x = 600, y = 600 ;
+    private int lvl = 1;
     private int dirX = 0, dirY = 0;
     private boolean food = false;
     private final int speed = 50;
-    private int z = 1;
-    private int foodsy = 50;
+    private final int foodsy = 50;
     //Koordynaty
     private int[] snake_X = new int [200];
     private int[] snake_Y = new int[200];
@@ -53,7 +53,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     Thread thread;
     Random rm = new Random();
     
-    public Wonsz(){
+    public Wonsz(int ruchy){
         super("Wonsz");
         setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(null);
@@ -62,9 +62,10 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         
         start();
         
+        p.setSize(new Dimension(400, 400));
         p.setLayout(null);
         p.setBackground(Color.DARK_GRAY);
-       
+        
         add(p);
         show();
         
@@ -78,7 +79,7 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
 
     
     public void init(){
-        rt =1;
+        lvl =1;
         snake_X[0] = 400;
         snake_Y[0] = 300;
         dirX = 0;
@@ -97,33 +98,43 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
         jlabel.setBorder(new LineBorder(Color.cyan));
         jlabel.setForeground(Color.CYAN);
         jlabel.setBounds(0, 0, 600, 20);
+        jlabel.setOpaque(false);
+        jlabel.setBackground(Color.BLACK);
+        jlabel.invalidate();
      
         game_over.setForeground(Color.CYAN);
         game_over.setBounds(100, 200, 400, 100);
+        head[0] = new JButton("head" + 0);
+        head[0].setEnabled(false);
+        head[0].setBounds(200, 200, 10, 10);
+        head[0].setBackground(Color.red);
+        p.add(head[0]);
         
         foods[0] = new JButton("foods"+0);
             for(int i = 1; i < foodsy; i++){
                 int a = 10 + (10 * rm.nextInt(60));
                 int b = 10 + (10 * rm.nextInt(60));
+                if(b < 30){
+                    b+=50;
+                }
                 foods[i] = new JButton("foods"+i);
                 foods[i].setEnabled(false);
                 foods[i].setBounds(a, b, 10, 10);
                 foods[i].setBackground(Color.green);
                 p.add(foods[i]);
-                System.out.println("Wykonanie");
         }
         
         //Aktualizowanie wyświetlaych punktów
         jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
         p.add(jlabel);
         
-        for(int i = 0; i < rt; i++){
-            jb[i] = new JButton("jb" + i );
-            jb[i].setEnabled(false);
-          
-            p.add(jb[i]); 
-            System.out.println("jb " + i);
-        }
+//        for(int i = 0; i < rt; i++){
+//            head[i] = new JButton("jb" + i );
+//            head[i].setEnabled(false);
+//          
+//            p.add(head[i]); 
+//            System.out.println("jb " + i);
+//        }
     }
     
     //Reset wszystkiego
@@ -139,60 +150,75 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     }
     //Rośnięcie
     public void levelUp(int i){
-         jb[rt] = new JButton();
-         jb[rt].setEnabled(false);
-         jb[rt].setBackground(Color.CYAN);
-         p.add(jb[rt]);
+        //System.out.println("LVLUP " + i);
+        p.remove(foods[i]);
+        
+        foods[i] = new JButton();
+        foods[i].setEnabled(false);
+        foods[i].setBackground(Color.green);
+
+        p.add(foods[i]);
          
-         //Ustawienie nowego punktu
-         int x = 10 + (10 * rm.nextInt(44));
-         int y = 10 + (10 * rm.nextInt(44));
+        //Ustawienie nowego punktu
+        int x = 10 + (10 * rm.nextInt(44));
+        int y = 10 + (10 * rm.nextInt(44));
+        if(y < 30){
+            y+=50;
+        }
+        foods[i].setBounds(x,y,10,10);
+        
+        head[lvl] = new JButton("head" + 0);
+        head[lvl].setEnabled(false);
+        head[lvl].setBounds(-10,0, 10, 10);
+        head[lvl].setBackground(Color.cyan);
+        p.add(head[lvl]);
+        lvl++;
          
-         snake_X[rt] = x;
-         snake_Y[rt] = y;
-         
-         jb[rt].setBounds(x,y,10,10);
-         rt++;
+
+        
+        
+        
          
     }
     
     public void move_Forward(){
-        for(int i = 0; i < rt; i++){
-            snake_Poz[i] = jb[i].getLocation();
+        for(int i = 1; i < lvl; i++){
+            snake_Poz[i] = head[i-1].getLocation();
+            //System.out.println(head[i].getLocation());
         }
         
         //Poruszanie głową wunsza
         snake_X[0] += dirX;
         snake_Y[0] += dirY;
-        jb[0].setBounds(snake_X[0], snake_Y[0], 10, 10);
-        jb[0].setBackground(Color.RED);
+        head[0].setBounds(snake_X[0], snake_Y[0], 10, 10);
+        head[0].setBackground(Color.RED);
         
-        for(int i = 1; i < rt; i++){
-            foods[i].setLocation(snake_Poz[i - 1]);
+        for(int i = 1; i < lvl; i++){
+            head[i].setLocation(snake_Poz[i]);
         }
         
         //Poruszanie Wunszem
         if(snake_X[0] == x)
-            snake_X[0] = 10;
+            snake_X[0] = 0;
         else if(snake_X[0] == 0)
-            snake_X[0] = x - 10;
+            snake_X[0] = x;
         else if(snake_Y[0] == y - 10)
             snake_Y[0] = 20;
         else if(snake_Y[0] == 20)
             snake_Y[0] = y - 10;
         
         //Zdobywanie punktu - kolizja z jedzeniem
-        if(snake_X[0] == snake_X[rt - 1] && snake_Y[0] == snake_Y[rt - 1] && rt > 1){
-            food = false;
-            score += 1;
-            jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
-            System.out.println("Punkty: " + score);
-        }
+//        if(snake_X[0] == snake_X[lvl - 1] && snake_Y[0] == snake_Y[lvl - 1] && lvl > 1){
+//            food = false;
+//            score += 1;
+//            jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
+//            System.out.println("Punkty: " + score);
+//        }
+
         for(int i = 0; i < foodsy; i++){
-            if(jb[0].getBounds().intersects(foods[i].getBounds())){
+            if(head[0].getBounds().intersects(foods[i].getBounds())){
                 //System.out.println("Działa");
                 levelUp(i);
-                food = false;
                 score += 1;
                 jlabel.setText("<html><h3>Punkty: " + score + "</h3></html>");
                 System.out.println("Punkty: " + score);
@@ -200,13 +226,13 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
                 
             }
         }
-        if(!food){
-            //levelUp();
-            food = true;
-        }
-        else{
-            jb[rt - 1].setBounds(snake_X[rt - 1], snake_Y[rt - 1], 10, 10);
-        }
+//        if(!food){
+//            //levelUp();
+//            food = true;
+//        }
+//        else{
+//            head[lvl - 1].setBounds(snake_X[lvl - 1], snake_Y[lvl - 1], 10, 10);
+//        }
 
         p.repaint();
         show();
@@ -215,13 +241,14 @@ public class Wonsz extends JFrame implements KeyListener, Runnable  {
     @Override
     public void run() {
       while(!over){
-          for(int i = 1; i<rt; i++){
-              if(jb[0].getBounds().intersects(jb[i].getBounds())){
-                  
+          for(int i = 1; i<lvl-1; i++){
+              if(head[0].getBounds().intersects(head[i].getBounds())){
+                  System.out.println(head[i]);
                   over = true;
               }
           }
           move_Forward();
+          
          try{
             Thread.sleep(speed);
          }catch(InterruptedException e){
