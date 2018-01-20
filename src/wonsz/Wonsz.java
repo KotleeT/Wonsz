@@ -153,7 +153,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
     public void levelUp(int q){
         //Usunięcie zjedzonego punktu
         p.remove(foods[q]);
-        System.out.println(q);
+        //System.out.println(q);
         //Utworzenie nowego punktu w losowym miejscu
         foods[q] = new JButton();
         foods[q].setEnabled(false);
@@ -212,7 +212,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
             if(head[0].getBounds().intersects(foods[i].getBounds())){
                 score += 1;
                 jlabel.setText("<html><h3>Punkty: " + score + "&nbsp &nbsp &nbsp Ruchy: " + m + "</h3></html>");
-                System.out.println("Punkty: " + score + " " + i);
+                //System.out.println("Punkty: " + score + " " + i);
                 levelUp(i);  
             }
         }
@@ -224,7 +224,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         char moves = mo;
         switch(moves){
             case 'L': 
-                System.out.println("l");
+                //System.out.println("l");
                 if(dirX == -10 && dirY == 0){
                     dirX = 0;
                     dirY = 10;
@@ -245,7 +245,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
                 jlabel.setText("<html><h3>Punkty: " + score + "&nbsp &nbsp &nbsp Ruchy: " + m + "</h3></html>");
                 break;
             case 'R':
-                System.out.println("r");
+                //System.out.println("r");
                 if(dirX == -10 && dirY == 0){
                     dirX = 0;
                     dirY = -10;
