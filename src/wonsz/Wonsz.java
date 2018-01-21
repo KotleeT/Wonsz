@@ -18,57 +18,91 @@ import javax.swing.border.LineBorder;
 import java.lang.ClassCastException;
 /**
  *
- * @author Mateusz
+ * @author Mateusz Kotlarczyk, Bartłomiej Leśniak
+ * @version 0.9
+ * 
  */
 public final class Wonsz extends JFrame implements KeyListener, Runnable  {
     
+    //Utworzenie JPanel'u - pola gry
     private final JPanel p = new JPanel();
-    
+    //Parametry odpowiedzialne za wielkość pola gry
     private final int Height = 600;
     private final int Width = 600;
     
     //Opcje Wunsza
-    private final JButton[] head = new JButton[500];
+    //Maksymalna długoś węża - 5000
+    private final JButton[] head = new JButton[5000];
+    //Maksymalna ilość jedzenia - 2000
     private final JButton[] foods = new JButton[2000];
+    
+    //Utworzenie dwóch osobnych pól wyświetlających tekst.
     JLabel jlabel = new JLabel("", JLabel.CENTER);
     JLabel game_over = new JLabel("", JLabel.CENTER);
 
-    private final int x = 600, y = 600 ;
+    //Pomocnicze zmienne do wielkości
+    private final int x = 600, y = 600;
+    //Określenie startowego poziomu
     private int lvl = 1;
+    //Nadanie domyślnych kierunków poruszania
     private int dirX = 0, dirY = 0;
+    //Zmienne odpowiedzialne za szybkość gry, szybkość zmiany kierunków oraz ilość jedzenia na planszy
     private final int speed = 50;
     private final int time = 200;
     private final int foodsy = 300;
-    //Koordynaty
-    private final int[] snake_X = new int [200];
-    private final int[] snake_Y = new int[200];
     
-    //Poruszsanie
-    private final Point[] snake_Poz = new Point[300];
+    //Koordynaty pomocnicze
+    private final int[] snake_X = new int [500];
+    private final int[] snake_Y = new int[500];
+    
+    //Zmienna do odczytu pozycji węża
+    private final Point[] snake_Poz = new Point[500];
+    
     private int score = 0;
     private boolean over = false;
+    
+    //Zmienne pomocnicze do określania ilości ruchów
     private final int mv;
     private int m = 0;
-    private final String eatx;
     private final int mvsx;
-    private boolean kannibal = false;
-    //private int mx = 0;
-    private String ways;
+    private String ways;  
     
-
+    private final String eatx;
+    private boolean kannibal = false;
+    
+    //Utworzenie nowego wątku - dzięki temu gra działa
     Thread thread;
-    Thread thread2;
+    //Dwa pomocnicze randomy
     Random rm = new Random();
     Random mr = new Random();
+    
+    //Wykonywanie funkcji zmiany kierunków w określonych odstępach czasowych - deklaracja
     ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     
+    /**
+     * Główna metoda programu odpowiedzianla za wywołanie odpowiednich funkcji.
+     * Rysuje pole gry, nadaje mu rozmiar oraz odpowiednie opcje.
+     * Wczytuje dane podane przez użytkownika i przekazuje do wywoływanych metod.
+     * 
+     * @param movements - ilość ruchów, które wykona wąż
+     * @param chars - wygenerowane wcześniej ruchy węża
+     * @param eat - decyzja użytkownika, czy wąż się zje
+     * @param mvs - określony ruch, w którym wąż się zje
+     */
     public Wonsz(int movements, String chars, String eat, int mvs){
+        //Nagłówek programu
         super("Wonsz");
+        //Ustawienie wielkości okna
         setSize(Width, Height);
+        //Relacja do...
         setLocationRelativeTo(null);
+        //Skalowanie okna
         setResizable(false);
+        //Domyślna opcja zamknięcia
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //Zawsze na wierzchu
         setAlwaysOnTop(true);
+        
         mv = movements;
         ways = chars;
         eatx = eat;
@@ -76,20 +110,23 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         
         start();
         
-        p.setSize(new Dimension(400, 400));
         p.setLayout(null);
         p.setBackground(Color.DARK_GRAY);
         
         add(p);
         show();
-        
         init();
+        
+        //Oczekiwanie na klawisze
         addKeyListener(this);
         
+        //Wystartowanie wątka gry
         thread = new Thread(this);
-        thread.start();
-        
+        thread.start();    
     }
+    /**
+     * Funkcja ustawiająca domyślne opcje startu gry
+     */
     public void init(){
         lvl = 1;
         m = 0;
@@ -100,6 +137,14 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         score = 0;
         over = false;
     }
+    /**
+     * Funkcja w której zostaje dodany pasek informacyjny u góry okna,
+     * okno końca gry - ukryte oraz generowana jest głowa węża - poziom 1.
+     * Dodatkowo zostaje utworzona określona ilość jedzenia na planszy.
+     * 
+     * Na końcu funkcji zostaje uruchuomiony executor odpowiedzialny za wywoływanie
+     * funkcji zmiany kierunku w określonym odstępie czasowym
+     */
     public void start(){
         //Dodanie napisów - ramka u góry z punktami
         jlabel.setBorder(new LineBorder(Color.cyan));
@@ -129,9 +174,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
             if(b < 30){
                 b+=50;
             }
-//            else if(a >= (y - 30)){
-//                b-=30;
-//            }
+            
             foods[i] = new JButton("foods"+i);
             foods[i].setEnabled(false);
             foods[i].setBounds(a, b, 10, 10);
@@ -147,7 +190,9 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         executor.scheduleAtFixedRate(moveRun, 0, time, TimeUnit.MILLISECONDS);
     }
     
-    //Reset wszystkiego
+    /**
+     * Funkcja przywracająca program do stanu początkowego - w wersji 0.9 nieużywana.
+     */
     public void reset(){
         init();
         p.removeAll();
@@ -158,7 +203,13 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         thread = new Thread(this);
         thread.start();
     }
-    //Rośnięcie
+    /**
+     * Funkcja odpowiedzialna za wydłużanie węża wraz ze zjadanym jedzeniem.
+     * W momencie zjedzenia danego punktu w jego miejsce zostaje utworzony kolejny
+     * na losowej pozycji, a zjedzony punkt zostaje doczepiony do ogonu węża.
+     * 
+     * @param q - określenie punktu zjedzonego przez węża, by można było go usunąć z planszy 
+     */
     public void levelUp(int q){
         //Usunięcie zjedzonego punktu
         p.remove(foods[q]);
@@ -187,7 +238,10 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         lvl++;    
     }
     
-    //Samoczynne poruszanie do przodu
+    /**
+     * Funkcja poruszająca węża przed siebie.
+     * Dodatkowo sprawdza, czy ruchy się nie skończyły oraz wychwytuje jedzone punkty.
+     */
     public void move_Forward(){
         //Wyłączenie funkcji zmiany kierunku kiedy skończą się ruchy
         if(m == mv){
@@ -217,19 +271,24 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         else if(snake_Y[0] == 20)
             snake_Y[0] = y - 10;
         
+        //Wychwycenie punktu zjedzonego przez węża
         for(int i = 1; i < foodsy; i++){
             if(head[0].getBounds().intersects(foods[i].getBounds())){
                 score += 1;
                 jlabel.setText("<html><h3>Punkty: " + score + "&nbsp &nbsp &nbsp Ruchy: " + m + "</h3></html>");
-                //System.out.println("Punkty: " + score + " " + i);
                 levelUp(i);  
             }
         }
         p.repaint();
         show();
     }
- 
-        public void move(char mo){
+    
+    /**
+     * Funkcja zmieniająca kierunek poruszania węża na podstawie przesłanej do niej
+     * informacji o aktualnie wykonanym ruchu.
+     * @param mo - ruch, który w tym momencie ma wykonać wąż.
+     */
+    public void move(char mo){
         char moves = mo;
         switch(moves){
             case 'L': 
@@ -280,12 +339,23 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
                 break;
         }
     }
-        Runnable moveRun = new Runnable() {
-            public void run() {
-                move(ways.charAt(m));
-            }
-        };
+    /**
+     * Funkcja wywoływana przez executor co określony odstęp czasu. Wewnątrz wywołuje funkcję odpowiedzialną za zmianę kierunku.
+     */
+    Runnable moveRun = new Runnable() {
+        @Override
+        public void run() {
+            move(ways.charAt(m));
+        }
+    };
     
+    /**
+     * Metoda uruchomienia odpowiadająca za wywoływanie funkcji poruszania do przodu
+     * oraz sprawdzanie końca gry.
+     * 
+     * Metoda sprawdza, czy wąż sam siebie nie zjada. W przypadku końca gry
+     * wyświetla informację o wyniku zależną od typów użytkownika.
+     */
     @Override
     public void run() {
         while(!over){
@@ -300,23 +370,26 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
                 }
             }
             try{
+                //Czas z jakim program się odświeża
                 Thread.sleep(speed);
             }catch(InterruptedException e){
             }
         } 
-      if(over){
-          executor.shutdown();
-          if(("T".equals(eatx) || "t".equals(eatx)) && mvsx == m && kannibal){
-              game_over.setText("<html><center><span style='font-size: 15px'>Koniec Gry!</span><br/>Ruch: " + m + "<br/><span style='font-size: 10px;'><br/>Przewidziałeś to! Wąż się zjadł!<br/>Naciśnij R aby wyjść</span></center></html>");
-          }
-          else if(("N".equals(eatx) || "n".equals(eatx)) && mvsx == 0 && !kannibal){
-              game_over.setText("<html><center><span style='font-size: 15px'>Udało się!</span><br/>Wąż się nie zjadł, a ty to przewidziałeś!<br/>Naciśnij R aby wyjść</center></html>");
-          }
-          else
-              game_over.setText("<html><center><span style='font-size: 12px;'>Niestety, nie przewidziałeś wyniku.</span></center>");
+        if(over){
+            executor.shutdown();
+            if(("T".equals(eatx) || "t".equals(eatx)) && mvsx == m && kannibal){
+                game_over.setText("<html><center><span style='font-size: 15px'>Koniec Gry!</span><br/>Ruch: " + m + "<br/><span style='font-size: 10px;'><br/>Przewidziałeś to! Wąż się zjadł!<br/>Naciśnij R aby wyjść</span></center></html>");
+            }
+            else if(("N".equals(eatx) || "n".equals(eatx)) && mvsx == 0 && !kannibal){
+                game_over.setText("<html><center><span style='font-size: 15px'>Udało się!</span><br/>Wąż się nie zjadł, a ty to przewidziałeś!<br/>Naciśnij R aby wyjść</center></html>");
+            }
+            else
+                game_over.setText("<html><center><span style='font-size: 12px;'>Niestety, nie przewidziałeś wyniku.</span></center>");
           
+          //Rysowanie tła i ustawienie jego koloru na czarny.
           game_over.setOpaque(true);
           game_over.setBackground(Color.BLACK);
+          //Zatrzymanie wątku gry
           thread.stop();
       }
     }
