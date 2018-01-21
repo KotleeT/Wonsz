@@ -49,7 +49,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
     //Zmienne odpowiedzialne za szybkość gry, szybkość zmiany kierunków oraz ilość jedzenia na planszy
     private final int speed = 50;
     private final int time = 200;
-    private final int foodsy = 300;
+    private final int foodsy = 400;
     
     //Koordynaty pomocnicze
     private final int[] snake_X = new int [500];
@@ -171,8 +171,19 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         for(int i = 1; i < foodsy; i++){
             int a = 10 + (10 * rm.nextInt(60));
             int b = 10 + (10 * rm.nextInt(60));
+            
             if(b < 30){
                 b+=50;
+            }
+            else if(b > Height - 20){
+                b-=100;
+            }
+            
+            if(a < 10){
+                a+=50;
+            }
+            else if(a > Width - 20){
+                a=+100;
             }
             
             foods[i] = new JButton("foods"+i);
@@ -263,13 +274,13 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         
         //Logika poruszania przy krawędziach
         if(snake_X[0] == x)
-            snake_X[0] = 10;
-        else if(snake_X[0] == 0)
+            snake_X[0] = -10;
+        else if(snake_X[0] == -20)
             snake_X[0] = x - 10;
-        else if(snake_Y[0] == y - 10)
-            snake_Y[0] = 30;
-        else if(snake_Y[0] == 20)
-            snake_Y[0] = y - 10;
+        else if(snake_Y[0] == y)
+            snake_Y[0] = 20;
+        else if(snake_Y[0] == 10)
+            snake_Y[0] = y - 20;
         
         //Wychwycenie punktu zjedzonego przez węża
         for(int i = 1; i < foodsy; i++){
