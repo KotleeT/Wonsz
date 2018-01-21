@@ -24,8 +24,8 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
     
     private final JPanel p = new JPanel();
     
-    private final int HEIGHT = 600;
-    private final int WIDTH = 600;
+    private final int Height = 600;
+    private final int Width = 600;
     
     //Opcje Wunsza
     private final JButton[] head = new JButton[500];
@@ -49,7 +49,10 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
     private boolean over = false;
     private final int mv;
     private int m = 0;
-    private int mx = 0;
+    private final String eatx;
+    private final int mvsx;
+    private boolean kannibal = false;
+    //private int mx = 0;
     private String ways;
     
 
@@ -59,15 +62,18 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
     Random mr = new Random();
     ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     
-    public Wonsz(int movements, String chars){
+    public Wonsz(int movements, String chars, String eat, int mvs){
         super("Wonsz");
-        setSize(WIDTH, HEIGHT);
+        setSize(Width, Height);
         setLocationRelativeTo(null);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setAlwaysOnTop(true);
         mv = movements;
         ways = chars;
+        eatx = eat;
+        mvsx = mvs;
+        
         start();
         
         p.setSize(new Dimension(400, 400));
@@ -123,6 +129,9 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
             if(b < 30){
                 b+=50;
             }
+//            else if(a >= (y - 30)){
+//                b-=30;
+//            }
             foods[i] = new JButton("foods"+i);
             foods[i].setEnabled(false);
             foods[i].setBounds(a, b, 10, 10);
@@ -135,7 +144,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         p.add(jlabel);
         
         //Wywoływanie funkcji zmiany kierunku w określonych dostępach czasu
-        executor.scheduleAtFixedRate(helloRunnable, 0, time, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(moveRun, 0, time, TimeUnit.MILLISECONDS);
     }
     
     //Reset wszystkiego
@@ -267,10 +276,11 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
                 break;
             case 'F':
                 m++;
+                jlabel.setText("<html><h3>Punkty: " + score + "&nbsp &nbsp &nbsp Ruchy: " + m + "</h3></html>");
                 break;
         }
     }
-        Runnable helloRunnable = new Runnable() {
+        Runnable moveRun = new Runnable() {
             public void run() {
                 move(ways.charAt(m));
             }
@@ -281,7 +291,11 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         while(!over){
             move_Forward();
             for(int i = 1; i<lvl-1; i++){
-                if(head[0].getBounds().intersects(head[i].getBounds()) || m == mv){
+                if(head[0].getBounds().intersects(head[i].getBounds())){
+                    over = true;
+                    kannibal = true;
+                }
+                else if(m == mv){
                     over = true;
                 }
             }
@@ -292,7 +306,15 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
         } 
       if(over){
           executor.shutdown();
-          game_over.setText("<html><span style='font-size: 15px; text-align: center;'>&nbsp Koniec Gry!</span><br/> &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp Ruch: " + m + "<br/><span style='font-size: 10px;'>Naciśnij R aby wyjść<span></html>");
+          if(("T".equals(eatx) || "t".equals(eatx)) && mvsx == m && kannibal){
+              game_over.setText("<html><center><span style='font-size: 15px'>Koniec Gry!</span><br/>Ruch: " + m + "<br/><span style='font-size: 10px;'><br/>Przewidziałeś to! Wąż się zjadł!<br/>Naciśnij R aby wyjść</span></center></html>");
+          }
+          else if(("N".equals(eatx) || "n".equals(eatx)) && mvsx == 0 && !kannibal){
+              game_over.setText("<html><center><span style='font-size: 15px'>Udało się!</span><br/>Wąż się nie zjadł, a ty to przewidziałeś!<br/>Naciśnij R aby wyjść</center></html>");
+          }
+          else
+              game_over.setText("<html><center><span style='font-size: 12px;'>Niestety, nie przewidziałeś wyniku.</span></center>");
+          
           game_over.setOpaque(true);
           game_over.setBackground(Color.BLACK);
           thread.stop();
@@ -307,7 +329,7 @@ public final class Wonsz extends JFrame implements KeyListener, Runnable  {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        //Lewo
+        //Po naciśnięciu R zamyka program
         if(e.getKeyCode() == 82){
             System.exit(0);
         }
